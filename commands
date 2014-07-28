@@ -1,3 +1,0 @@
-cat ~/.ssh/id_rsa.pub | vagrant ssh -- sudo sshcommand acl-add dokku sirris
-git remote add local-deploy dokku@dokku.me:node-simple
-git push local-deployyy master

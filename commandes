@@ -1,0 +1,223 @@
+
+ssh root@dokku.me "echo export NODE_ENV="development" > /home/git/node-simple/ENV
+
+ssh dokku@dokku.me "echo export NODE_ENV="development" > /home/dokku/node-js-simple/ENV
+
+
+dokku config node-js-simple
+
+dokku config:set node-js-simple NODE_ENV=development
+
+
+———
+
+In the main directory you have:
+
+The vagrant files
+Dokku’s files
+puppet’s files
+
+Vagrantfile inits the whole installation (virtual machine with ubuntu, git, docker, dokku, and software add with puppet)
+
+// Take care of that (raring vs trusty)
+BOX_NAME = ENV["BOX_NAME"] || “raring”
+BOX_URI = ENV["BOX_URI"] || "https://cloud-images.ubuntu.com/vagrant/trusty/current/trusty-server-cloudimg-amd64-vagrant-disk1.box"
+
+
+0. Cloning the dokku repo
+
+> git clone git@github.com:progrium/dokku.git
+> cd dokku
+
+1. Local Networking : Handy for testing
+
+› sudo nano /private/etc/hosts
+
+and add :
+
+10.0.0.2        dokku.me
+10.0.0.2        node-simple.dokku.me
+
+// VM of vagrant is by default assign to 10.0.0.2
+
+2. Fire ip the virtual machine : You’ve to be in the Vagrantfile directory
+
+> vagrant up
+
+
+3. Upload your ssh key to Dokku server, so you will be to git push code there.
+
+
+> cat ~/.ssh/id_rsa.pub | vagrant ssh -- sudo sshcommand acl-add dokku sirris
+
+// cat ~/.ssh/id_rsa.pub | ssh root@{{server ip address}} "sudo sshcommand acl-add dokku {{key name/descriptor}}"
+// User is “dokku”, pass is “sirris”
+
+
+4. Test if everything is fine
+
+> vagrant ssh
+> docker -v
+
+
+5. Deploy to Dokku
+
+// In tuto : > git remote add local-deploy git@dokku.me:node-simple
+// Go in your app directory and then “git remote add {{dokku remote name}} dokku@{{server ip address}}:{{application name}}”
+
+//You can now see your application’s url by typing:
+// “dokku url {{application name}}”
+
+> cd node-simple
+> git remote add local-deploy dokku@dokku.me:node-simple
+
+> git push local-deploy master
+
+
+**. Install puppet
+
+add that to the vagrant file :
+
+    config.vm.provision :puppet do |puppet|
+        puppet.manifests_path = "puppet/manifests"
+        puppet.module_path = "puppet/modules"
+        puppet.options = ['--verbose']
+    end
+**
+
+
+6. Install puppet module
+
+Methode 1 : Unpack the Tarball to continious-deployment-demo/puppet/modules and rename it to the module name which defined in manifests/init.pp (you can use “head” command on the init.pp file to verify)
+
+Then include it into the file:
+
+continious-deployment-demo/puppet/manifests/default.pp
+
+
+They are various modules here :
+
+https://github.com/puppetlabs/
+
+and here :
+
+https://github.com/example42/puppet-modules
+
+///////////
+
+
+7. Add Jenkins to puppet
+
+
+Download tar file here : https://forge.puppetlabs.com/rtyler/jenkins
+Add it like explained before
+
+/!\ Don’t forget to add the dependancies /!\  : so add
+
+https://forge.puppetlabs.com/darin/zypprepo  module.
+
+Java module is already installed.
+
+
+8. Start jenkins
+
+sudo /etc/init.d/jenkins start
+
+and
+
+sudo /etc/init.d/jenkins stop to stop it
+
+
+$$$$$$$$$$$$$$ If we want to use jenkins in another VM :
+
+
+In another directory :
+
+
+vagrant init scottpgallagher/ubuntu-14_04-jenkins
+
+and then
+
+vagrant up
+
+$$$$$$$$$$$$$$
+
+
+9. Configure vagrant port for jenkins
+
+
+Guest Machine : the virtual one
+Host : the real
+
+
+config.vm.network "forwarded_port", guest: 80, host: 8080
+
+The forwarded port configuration expects two parameters, the port on the guest and the port on the host
+
+
+This will allow accessing port 80 on the guest via port 8080 on the host.
+
+
+So we add “config.vm.network :forwarded_port, guest: 8080, host: 3000” in the Vagrantfile to access jenkins via port 3000 on the host machine.
+
+
+10. Random error when vagrant provision :
+
+
+If error message with provisioning :
+
+fatal error: runtime: cannot allocate heap metadata
+runtime: panic before malloc heap initialized
+fatal error: runtime: cannot allocate heap metadata
+make: *** [stack] Error 2
+
+then
+
+vagrant ssh and then in sudo :
+
+> dd if=/dev/zero of=/swapfile bs=1024 count=1024000
+> mkswap /swapfile
+> swapon /swapfile
+
+
+like explained at : http://blog.42quirks.com/install-dokku-on-amazon-ec2-ubuntu-12-04/
+
+
+11. Change dokku/puppet/modules/jenkins/manifests/plugins.pp file to automatically install git jenkins plug in
+
+List of plug in :
+
+http://updates.jenkins-ci.org/download/plugins/
+
+
+Example, add that to install git plug in:
+
+jenkins::plugin { "promoted-builds" : }
+  jenkins::plugin { "ssh-credentials" : }
+  jenkins::plugin { "credentials" : }
+  jenkins::plugin { "git-client" : }
+  jenkins::plugin { "multiple-scms" : }
+  jenkins::plugin { "scm-api" : }
+  jenkins::plugin { "token-macro" : }
+  jenkins::plugin { "parameterized-trigger" : }
+  jenkins::plugin { "git" : }
+
+
+https://forge.puppetlabs.com/rtyler/jenkins
+
+
+/!\ Don’t forget the dependancies /!\
+http://csfreebird.blogspot.be/2012/08/installing-jenkins-plugin-manually.html
+
+
+
+
+
+
+
+
+
+
+
+
+
