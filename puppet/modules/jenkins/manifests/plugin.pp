@@ -98,4 +98,5 @@ define jenkins::plugin(
       notify  => Service['jenkins']
     }
   }
+
 }

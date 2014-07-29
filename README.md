@@ -177,6 +177,6 @@ Looking to keep codebase as simple and hackable as possible, so try to keep your
  * **Multitenancy.** It's ready for it, but again, have a look at [Flynn](https://flynn.io/).
  * **Client app.** Given the constraints, running commands remotely via SSH is fine.
 
-### License
+## License
 
 MIT
