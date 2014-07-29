@@ -1,7 +1,7 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-BOX_NAME = ENV["BOX_NAME"] || “raring”
+BOX_NAME = ENV["BOX_NAME"] || "raring"
 BOX_URI = ENV["BOX_URI"] || "https://cloud-images.ubuntu.com/vagrant/trusty/current/trusty-server-cloudimg-amd64-vagrant-disk1.box"
 BOX_MEMORY = ENV["BOX_MEMORY"] || "512"
 DOKKU_DOMAIN = ENV["DOKKU_DOMAIN"] || "dokku.me"
