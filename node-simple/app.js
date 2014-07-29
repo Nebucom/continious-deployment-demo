@@ -13,7 +13,6 @@ var app = express();
 
 assert.ok(false);
 
-
 // all environments
 app.set('port', process.env.PORT || 3000);
 app.set('views', __dirname + '/views');
