@@ -9,6 +9,11 @@ dokku config node-js-simple
 dokku config:set node-js-simple NODE_ENV=development
 
 
+node-simple app :
+
+https://github.com/alexanderbeletsky/node-simple
+
+
 ———
 
 In the main directory you have:
@@ -20,7 +25,7 @@ puppet’s files
 Vagrantfile inits the whole installation (virtual machine with ubuntu, git, docker, dokku, and software add with puppet)
 
 // Take care of that (raring vs trusty)
-BOX_NAME = ENV["BOX_NAME"] || “raring”
+BOX_NAME = ENV["BOX_NAME"] || "raring"
 BOX_URI = ENV["BOX_URI"] || "https://cloud-images.ubuntu.com/vagrant/trusty/current/trusty-server-cloudimg-amd64-vagrant-disk1.box"
 
 
@@ -50,14 +55,26 @@ and add :
 
 > cat ~/.ssh/id_rsa.pub | vagrant ssh -- sudo sshcommand acl-add dokku computer1
 
+> alias dokku="ssh -t dokku@<ip-of-your-instance>" // more convenient
+
 // cat ~/.ssh/id_rsa.pub | ssh root@{{server ip address}} "sudo sshcommand acl-add dokku {{key name/descriptor}}"
 // User is “dokku”, description is “computer1”
 //sshcommand acl-add <user> <ssh-key-name>
+
+
+// to get public key hash and compare to github by example, enter : > ssh-keygen -l -f id_rsa.pub
+
 
 4. Test if everything is fine
 
 > vagrant ssh
 > docker -v
+
+
+4. bis : If we have re-install dokku and changer key, don’t forget to first delete entry in client know host : “Offending key in…”
+
+//ssh-keygen -R <nom_du serveur_SSH>
+> ssh-keygen -R dokku.me
 
 
 5. Deploy to Dokku
@@ -72,6 +89,16 @@ and add :
 > git remote add local-deploy dokku@dokku.me:node-simple
 
 > git push local-deploy master
+
+
+example output :
+
+-----> Deploying node-simple ...
+=====> Application deployed:
+       http://dokku.me:49153
+
+To dokku@dokku.me:node-simple
+ * [new branch]      master -> master
 
 
 **. Install puppet
@@ -119,7 +146,7 @@ https://forge.puppetlabs.com/darin/zypprepo  module.
 Java module is already installed.
 
 
-8. Start jenkins
+8. Start jenkins  (Normally automatically done)
 
 sudo /etc/init.d/jenkins start
 
@@ -243,7 +270,7 @@ repository url :
 
 12 bis
 
-Configure git credentials; in the guest machine run :
+///////// Configure git credentials; in the guest machine run :
 
 > ssh-keygen -t rsa -C "label"
 
@@ -261,7 +288,9 @@ Then
 
 > ssh -T git@github.com
 
-to add key fingerprint to known host
+/////////// to add key fingerprint to known host
+
+Just take the same key pair then before ! Si just add existing host private key to jenkins
 
 
 
@@ -274,7 +303,10 @@ Instead we’ll ask jenkins to pull frequently github —> Cron like
 
 So, choose “build periodically option”
 
-..
+Planning :
+
+*/2 * * * *
+
 
 
 14
@@ -287,6 +319,34 @@ script shell jenkins :
 
 javac Hello.java;
 java Hello
+
+
+15. Post build options
+
+
+I believe you can just add two git repositories under the "source code management" section, and then specify that you want to build REPOLOCALNAME/branch, and then at the end under 'Git publisher' specify you want to merge and push to the remote branch. (ie. BranchToPush=branchname and TargetRemoteName= REMOTEREPONAME)
+
+*Remember, the names are specified under advanced options of the repository when you add it under the SCM section.
+
+—
+
+So, add a second repository url : 
+
+dokku@dokku.me:node-simple
+
+with the same credentials then the first repo
+
+
+Then, set a name, by example : prod
+
+
+Then, choose post build option “git publisher”
+
+
+——
+
+http://programmaticponderings.wordpress.com/2013/11/13/building-a-deployment-pipeline-using-git-maven-jenkins-and-glassfish-part-2-of-2/
+
 
 
 
