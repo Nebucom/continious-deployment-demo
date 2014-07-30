@@ -337,7 +337,7 @@ dokku@dokku.me:node-simple
 with the same credentials then the first repo
 
 
-Then, set a name, by example : prod
+Then, set a name, by example : remoterepo
 
 
 Then, choose post build option “git publisher”
@@ -346,6 +346,45 @@ Then, choose post build option “git publisher”
 ——
 
 http://programmaticponderings.wordpress.com/2013/11/13/building-a-deployment-pipeline-using-git-maven-jenkins-and-glassfish-part-2-of-2/
+
+
+BUT Don’t choose the Merge option!!!!
+
+
+just a post-it :
+
+Use the git remote rm command to remove a remote URL from your repository.
+
+> git remote -v
+> git remote rm destination
+
+
+—
+
+
+Very CI&CD interesting articles :
+
+http://jenkins-le-guide-complet.batmat.cloudbees.net/html/book.html
+
+http://jenkins-le-guide-complet.batmat.cloudbees.net/html/chapter-security.html
+
+http://www.methodsandtools.com/archive/archive.php?id=121
+
+http://catalyst-zero.com/release-your-app/
+
+http://www.kaczanowscy.pl/tomek/2012-07/jenkins-plugins-part-iii-towards-continuous-delivery
+
+http://www.agitech.co.uk/implementing-a-deployment-pipeline-with-jenkins/
+
+http://www.agitech.co.uk/deployment-pipelines-with-jenkins-puppet-and-jbehave/
+
+http://www.infoq.com/articles/orch-pipelines-jenkins
+
+http://thediscoblog.com/blog/2014/01/24/continuous-delivery-for-heroku-with-jenkins/
+
+http://www.carbonsilk.com/node/deploying-nodejs-apps/
+
+
 
 
 
