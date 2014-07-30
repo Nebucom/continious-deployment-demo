@@ -342,6 +342,12 @@ Then, set a name, by example : remoterepo
 
 Then, choose post build option “git publisher”
 
+branch to push : master
+
+
+
+For the example the first repo is a fork of node-simple
+
 
 ——
 
@@ -385,6 +391,15 @@ http://thediscoblog.com/blog/2014/01/24/continuous-delivery-for-heroku-with-jenk
 http://www.carbonsilk.com/node/deploying-nodejs-apps/
 
 
+———
+
+
+Logstash:
+
+dependencies : https://forge.puppetlabs.com/puppetlabs/concat
+
+
+then : https://forge.puppetlabs.com/camptocamp/logstash
 
 
 
