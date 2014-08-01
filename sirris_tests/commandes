@@ -502,6 +502,8 @@ or
 
 > sudo docker run -d -p 0.0.0.0:2222:22 -t -i evarga/jenkins-slave
 
+-d means in background
+
 > ssh jenkins@localhost -p 2222
 
 
@@ -542,13 +544,99 @@ Show only image ID's
 
 > sudo docker images -q
 
+—————
+
+
+Credentials for slave server:
+
+
+> ssh-keygen -t rsa
+
+
+> chmod 755 ~/.ssh
+
+
+> echo 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCr5lzMXzgxtWqYVWYzaxwoCzO9DPNqkPgJN/1Zire/FcisSIJkGU8E7E8Cpl5U3Fj+2whD9LkEhHOc6nwuRC8C4uDUxE9b54fwL0BqhEy6ADv3vOVPOu1SUg0g10A/+bmcJ+l5ER1LcOMzUP88chXZVRoFV9VjAbHlI8fxWaw34J66oJd7xRpYGlnuyfyCrrl5Wb+tssycZEAezs7r3NRuEvjcoGEgLiKBHqxWCekyq4VQw9pX0303eBKCMsy56z6OegtEtpF4LEubUBGSVPfzN6aVLhxP6z+P3NbYonxBRGiDxnI86jiViii/dljCp0sWE8yQtHUNu/D2zsOCD88L label' > /home/jenkins/.ssh/authorized_keys
+
+
+>  chmod 644 ~/.ssh/authorized_keys
+
+
+> exit
+
+
+> sudo docker commit f098b5830556 jenkins-test-cred
 
 
 
+http://www.centos.org/docs/5/html/5.2/Deployment_Guide/s3-openssh-rsa-keys-v2.html
+
+http://varmenise.tumblr.com/post/87976165063/docker-on-centos-jenkins
 
 
 
+——
+
+
+You can see that it creates a user jenkins:jenkins.
+
+So you would naturally use these credentials to access it by jenkins: this is wrong—> you need ssh authentication to make it work with the docker-plugin.
+
+pull the container: 
+
+> docker pull evarga/jenkins-slave
+
+Once you have done this you will see it appearing in the list of images (sudo docker images)
+
+
+run the container: 
+
+> docker run -i -t evarga/jenkins-slave /bin/bash
+
+create the ssh key pair
+
+> ssh-keygen -t rsa
+
+
+> echo 'AuthorizedKeysFile /etc/ssh/authorized_keys' >> /etc/ssh/sshd_config
+
+
+> echo 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCr5lzMXzgxtWqYVWYzaxwoCzO9DPNqkPgJN/1Zire/FcisSIJkGU8E7E8Cpl5U3Fj+2whD9LkEhHOc6nwuRC8C4uDUxE9b54fwL0BqhEy6ADv3vOVPOu1SUg0g10A/+bmcJ+l5ER1LcOMzUP88chXZVRoFV9VjAbHlI8fxWaw34J66oJd7xRpYGlnuyfyCrrl5Wb+tssycZEAezs7r3NRuEvjcoGEgLiKBHqxWCekyq4VQw9pX0303eBKCMsy56z6OegtEtpF4LEubUBGSVPfzN6aVLhxP6z+P3NbYonxBRGiDxnI86jiViii/dljCp0sWE8yQtHUNu/D2zsOCD88L label' > /etc/ssh/authorized_keys
 
 
 
+> echo "   IdentityFile /root/.ssh/id_rsa" >> /etc/ssh/ssh_config
 
+
+
+————
+
+
+For the test, to disable the fingerprint authentification :
+
+
+Add the following lines to the beginning of /etc/ssh/ssh_config
+
+
+Host 192.168.0.*
+   StrictHostKeyChecking no
+   UserKnownHostsFile=/dev/null
+
+
+Options:
+
+The Host subnet can be * to allow unrestricted access to all IPs.
+Edit /etc/ssh/ssh_config for global configuration or ~/.ssh/config for user-specific configuration.
+
+
+————
+
+man hier
+
+——-
+
+# We're being careful here in that we're only cleaning up containers which are no longer running
+
+sudo docker ps -a | grep "Exit" | awk '{print $1}' | while read -r id ; do
+  sudo docker rm $id
+done
