@@ -208,6 +208,10 @@ vagrant ssh and then in sudo :
 
 Reason : 512MB droplet is not big enough. Problem solved by adding a swapfile
 
+OR
+
+set vagrant virtual box memory to 1024
+
 
 like explained at : http://blog.42quirks.com/install-dokku-on-amazon-ec2-ubuntu-12-04/
 
@@ -336,8 +340,10 @@ dokku@dokku.me:node-simple
 
 with the same credentials then the first repo
 
-
 Then, set a name, by example : remoterepo
+ and under “Branches to build”, puts “origin/master”
+
+set a name too for the first repo, “origin”
 
 
 Then, choose post build option “git publisher”
@@ -394,23 +400,147 @@ http://www.carbonsilk.com/node/deploying-nodejs-apps/
 ———
 
 
-Logstash:
+Docker commands:
 
-dependencies : https://forge.puppetlabs.com/puppetlabs/concat
-
-
-then : https://forge.puppetlabs.com/camptocamp/logstash
+Commands List
 
 
+sudo docker [option] [command] [arguments]
+
+
+sudo docker images : List images
+
+sudo docker kill : kill a running container
+
+sudo docker ps : List containers
+
+sudo docker restart : Restart a running container
+
+sudo docker rm : Remove one or more containers
+
+sudo docker rim : Remove one or more images
+
+sudo docker start : Start a stopped container
+
+…
+
+Build process:
+
+# Build an image using the Dockerfile at current location
+# Tag the final image with [name] (e.g. *nginx*)
+# Example: sudo docker build -t [name] .
+sudo docker build -t memcached_img .
 
 
 
+…
+
+———
+
+A dedicated Jenkins job builds an image from this Dockerfile. We keep the image building as a separate task because it's time consuming… once an image is built, containers can be run from it over and over and the start up time is practically nil!
+
+
+——
+
+Jenkins+Docker COnfiguration
+
+
+Goto Jenkins Configuration page by clicking on Manage menu or browsing to the URL http://localhost:8080/configure
+Scroll down to Cloud Section
+Click on the `Add a new cloud` pop-up menu button which should have an option - docker
+
+
+—
+
+
+Docker image:
+
+- Basic docker jenkins slave (image) :
+
+https://registry.hub.docker.com/u/evarga/jenkins-slave/dockerfile
 
 
 
+- Public docker images:
+
+https://github.com/docker/docker/wiki/Public-docker-images
 
 
 
+//
+- Sidenote :
+
+
+REPOSITORY             TAG                 IMAGE ID            CREATED             VIRTUAL SIZE
+dokku/node-simple      latest              6018a554b6c8        20 hours ago        889.8 MB
+progrium/buildstep     latest              dc1e9e425683        41 hours ago        866.4 MB
+evarga/jenkins-slave   latest              f3ac335af281        3 months ago        438 MB
+
+
+Our dokku app is on the repository name “dokku/node-simple”
+//
+
+
+> sudo docker pull evarga/jenkins-slave
+
+> sudo docker images
+
+> sudo docker ps -a
+
+
+Ensuite, pour lancer une commande avec, il faut faire docker run id_image commande. Ceci va lancer l’image, lancer la commande, et dès que la commande se termine, arrêter l’image :
+
+
+sudo docker run -P -d evarga/jenkins-slave
+
+
+Thanks to the -P option used in the run command, all the exposed ports are mapped automatically. So if you go to yourDockerHost:49154 with a web browser, you’ll have the running Nuxeo instance.
+
+
+or
+
+
+> sudo docker run -d -p 0.0.0.0:2222:22 -t -i evarga/jenkins-slave
+
+> ssh jenkins@localhost -p 2222
+
+
+Works.
+
+If your host needs to allow connections from a jenkins instance hosted on a different machine, you will need to open up the TCP port. This can be achieved by editing /etc/init/docker.conf, and setting (for example) 
+
+
+
+> vagrant ssh
+
+> sudo nano /etc/default/docker
+ajouter :
+
+DOCKER_OPTS="-H 127.0.0.1:4243 -H unix:///var/run/docker.sock"
+
+
+
+Then go to jenkins, and make a test connection to http://localhost:4243
+
+
+—
+
+> sudo docker inspect 013d47357d20 | grep IP
+
+> sudo ssh jenkins@172.17.0.42
+
+Works
+
+--
+
+> sudo docker rm -f $(sudo docker ps -a | grep evarga)
+
+
+—
+
+Show only image ID's
+
+> sudo docker images -q
 
 
 
