@@ -4,5 +4,5 @@ include stdlib
 include apt
 include nodejs
 include zypprepo
-include jenkins
+#include jenkins
 ### to comment

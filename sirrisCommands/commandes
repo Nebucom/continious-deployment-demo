@@ -286,7 +286,7 @@ No way to someone else to access VM
 
 It generates a private/public key pair
 
-Then put your public key on github; and put your private key on jenkins
+Then put your public key on github; and put your private key on Jenkins
 
 Then 
 
@@ -294,7 +294,7 @@ Then
 
 /////////// to add key fingerprint to known host
 
-Just take the same key pair then before ! Si just add existing host private key to jenkins
+Just take the same key pair then before ! So just add existing host private key to jenkins
 
 
 
