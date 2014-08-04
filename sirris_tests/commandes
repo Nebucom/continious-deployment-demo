@@ -640,3 +640,6 @@ man hier
 sudo docker ps -a | grep "Exit" | awk '{print $1}' | while read -r id ; do
   sudo docker rm $id
 done
+
+
+
