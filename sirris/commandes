@@ -161,11 +161,12 @@ $$$$$$$$$$$$$$ If we want to use jenkins in another VM :
 In another directory :
 
 
-vagrant init scottpgallagher/ubuntu-14_04-jenkins
+vagrant up a new ubuntu box with puppet for jenkins,and by example:
 
-and then
+  config.vm.network :forwarded_port, guest: 8080, host: 2000
+  config.vm.network :"private_network", ip: "10.0.0.3”,
 
-vagrant up
+then add dokku.me to etc/hosts (not mandatory)
 
 $$$$$$$$$$$$$$
 
@@ -520,6 +521,15 @@ ajouter :
 
 DOCKER_OPTS="-H 127.0.0.1:4243 -H unix:///var/run/docker.sock"
 
+ou plutôt
+
+DOCKER_OPTS="-H 0.0.0.0:4243 -H unix:///var/run/docker.sock"
+
+then
+
+
+sudo service docker restart
+
 
 
 Then go to jenkins, and make a test connection to http://localhost:4243
@@ -605,7 +615,7 @@ create the ssh key pair
 
 
 
-> echo "   IdentityFile /root/.ssh/id_rsa" >> /etc/ssh/ssh_config
+> echo "    IdentityFile /root/.ssh/id_rsa" >> /etc/ssh/ssh_config
 
 
 
@@ -618,7 +628,7 @@ For the test, to disable the fingerprint authentification :
 Add the following lines to the beginning of /etc/ssh/ssh_config
 
 
-Host 192.168.0.*
+Host *
    StrictHostKeyChecking no
    UserKnownHostsFile=/dev/null
 
@@ -640,6 +650,157 @@ man hier
 sudo docker ps -a | grep "Exit" | awk '{print $1}' | while read -r id ; do
   sudo docker rm $id
 done
+
+
+
+
+
+——————
+
+add_pub_etc_et_jenkins :
+
+Je n’ai pas realise les commandes :
+
+> ssh-keygen -t rsa
+
+> echo "    IdentityFile /root/.ssh/id_rsa" >> /etc/ssh/ssh_config
+
+
+De plus, j’ai ajoute au server (docker) la cld publique du root et de l’user jenkins
+
+
+
+Add the following lines to the beginning of /etc/ssh/ssh_config, server side (docker)
+
+
+echo "    StrictHostKeyChecking no
+    UserKnownHostsFile=/dev/null" >> /etc/ssh/ssh_config
+
+
+———-
+
+
+pub_jenkins_all_com :
+
+
+toutes les commandes et cle publique jenkins et cld prive de la cle publique jenkins.
+
+Ensuite test avec autre cld privée
+
+
+
+
+—————
+
+
+
+
+sudo -u jenkins ssh-keygen
+
+That will generate the key for you here:
+/var/lib/jenkins/.ssh/id_rsa.pub
+
+
+ok, then
+
+
+
+echo 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCr5lzMXzgxtWqYVWYzaxwoCzO9DPNqkPgJN/1Zire/FcisSIJkGU8E7E8Cpl5U3Fj+2whD9LkEhHOc6nwuRC8C4uDUxE9b54fwL0BqhEy6ADv3vOVPOu1SUg0g10A/+bmcJ+l5ER1LcOMzUP88chXZVRoFV9VjAbHlI8fxWaw34J66oJd7xRpYGlnuyfyCrrl5Wb+tssycZEAezs7r3NRuEvjcoGEgLiKBHqxWCekyq4VQw9pX0303eBKCMsy56z6OegtEtpF4LEubUBGSVPfzN6aVLhxP6z+P3NbYonxBRGiDxnI86jiViii/dljCp0sWE8yQtHUNu/D2zsOCD88L label' > /etc/ssh/authorized_keys
+
+test_var_lib_key
+
+
+
+
+
+
+docker ps -a | grep 'weeks ago' | awk '{print $1}' | xargs docker rm
+
+
+
+sudo groupadd docker
+sudo gpasswd -a ${USER} docker
+sudo service docker.io restart
++ exit & log in
+
+
+———
+
+> vagrant up
+
+> vagrant ssh
+> mkdir dev
+> cd dev
+> cp /vagrant/test_slave/* .
+> sudo docker build -t bill .
+
+
+> sudo nano /etc/default/docker
+
+DOCKER_OPTS="-H 127.0.0.1:4243 -H unix:///var/run/docker.sock"
+
+> sudo gpasswd -a vagrant docker
+> sudo service docker restart
+
+
+
+> sudo -u jenkins ssh-keygen
+> sudo chmod 755 .ssh
+> cd .ssh
+> sudo chmod 644 *
+
+> docker run -i -t bill  /bin/bash
+> cd /var/lib/jenkins
+> echo …. >> authorized_keys
+> docker commit 973685f7e17d kill
+
+
+———
+
+
+Graylog : Vagrant Box
+
+https://github.com/hggh/graylog2-vagrant
+
+
+> git clone --recursive https://github.com/hggh/graylog2-vagrant.git
+> cd graylog2-vagrant
+> vagrant up
+> vagrant reload --provision  # because puppet needs to run twice to create GELF inputs
+> vagrant ssh
+
+http://localhost:9000/
+
+Username: admin
+Password: yourpassword
+
+cronjob runs every minute to push sample data into Graylog2
+
+
+Add 
+
+config.vm.network :"private_network", ip: "10.0.0.4"
+
+to vagrant file
+
+—
+
+Then, in the source machine
+
+…First add rsyslog module to puppet… then
+
+
+> sudo nano /etc/rsyslog.conf
+ 
+Add this line :
+
+*.* @<ip-server-graylog2>:514
+
+then 
+
+> /etc/init.d/rsyslog restart
+> sudo service rsyslog status (to verify)
+
 
 
 

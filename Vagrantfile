@@ -3,7 +3,7 @@
 
 BOX_NAME = ENV["BOX_NAME"] || "raring"
 BOX_URI = ENV["BOX_URI"] || "https://cloud-images.ubuntu.com/vagrant/trusty/current/trusty-server-cloudimg-amd64-vagrant-disk1.box"
-BOX_MEMORY = ENV["BOX_MEMORY"] || "512"
+BOX_MEMORY = ENV["BOX_MEMORY"] || "1024"
 DOKKU_DOMAIN = ENV["DOKKU_DOMAIN"] || "dokku.me"
 DOKKU_IP = ENV["DOKKU_IP"] || "10.0.0.2"
 PREBUILT_STACK_URL = File.exist?("#{File.dirname(__FILE__)}/stack.tgz") ? 'file:///root/dokku/stack.tgz' : nil
@@ -18,7 +18,8 @@ Vagrant::configure("2") do |config|
   config.vm.box_url = BOX_URI
   config.vm.synced_folder File.dirname(__FILE__), "/root/dokku"
   config.vm.network :forwarded_port, guest: 80, host: 8080
-  config.vm.network :forwarded_port, guest: 8080, host: 3000
+  config.vm.network :forwarded_port, guest: 8080, host: 2000
+  config.vm.network :forwarded_port, guest: 50000, host: 50000
   config.vm.hostname = "#{DOKKU_DOMAIN}"
   config.vm.network :private_network, ip: DOKKU_IP
 
