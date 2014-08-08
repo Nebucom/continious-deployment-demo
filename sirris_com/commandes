@@ -767,4 +767,41 @@ then
 
 sudo usermod -a -G docker jenkins
 
+———
+
+
+
+#!/bin/bash
+ 
+docker run --name ${JOB_NAME} boule
+ 
+# copy build artifacts out of the container
+docker cp ${JOB_NAME}:/node-simple/Hello.java .
+docker cp ${JOB_NAME}:/node-simple/Hello.class .
+ 
+# remove the container
+docker rm ${JOB_NAME}
+
+
+https://zapier.com/engineering/continuous-integration-jenkins-docker-github/
+
+
+http://www.activestate.com/blog/2014/01/using-docker-run-ruby-rspec-ci-jenkins
+
+
+http://www.centurylinklabs.com/15-quick-docker-tips/
+
+
+
+
+
+Fix “Permissions are too open … private key will be ignored”
+
+
+
+http://nerderati.com/2011/03/17/simplify-your-life-with-an-ssh-config-file/
+
+
+
+
 
