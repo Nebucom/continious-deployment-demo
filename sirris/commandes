@@ -24,7 +24,7 @@ puppet’s files
 
 Vagrantfile inits the whole installation (virtual machine with ubuntu, git, docker, dokku, and software add with puppet)
 
-// Take care of that (raring vs trusty)
+// I have to change variable “raring” to “trusty”
 BOX_NAME = ENV["BOX_NAME"] || "raring"
 BOX_URI = ENV["BOX_URI"] || "https://cloud-images.ubuntu.com/vagrant/trusty/current/trusty-server-cloudimg-amd64-vagrant-disk1.box"
 
@@ -408,35 +408,8 @@ Commands List
 
 sudo docker [option] [command] [arguments]
 
+—
 
-sudo docker images : List images
-
-sudo docker kill : kill a running container
-
-sudo docker ps : List containers
-
-sudo docker restart : Restart a running container
-
-sudo docker rm : Remove one or more containers
-
-sudo docker rim : Remove one or more images
-
-sudo docker start : Start a stopped container
-
-…
-
-Build process:
-
-# Build an image using the Dockerfile at current location
-# Tag the final image with [name] (e.g. *nginx*)
-# Example: sudo docker build -t [name] .
-sudo docker build -t memcached_img .
-
-
-
-…
-
-———
 
 A dedicated Jenkins job builds an image from this Dockerfile. We keep the image building as a separate task because it's time consuming… once an image is built, containers can be run from it over and over and the start up time is practically nil!
 
@@ -468,18 +441,6 @@ https://github.com/docker/docker/wiki/Public-docker-images
 
 
 
-//
-- Sidenote :
-
-
-REPOSITORY             TAG                 IMAGE ID            CREATED             VIRTUAL SIZE
-dokku/node-simple      latest              6018a554b6c8        20 hours ago        889.8 MB
-progrium/buildstep     latest              dc1e9e425683        41 hours ago        866.4 MB
-evarga/jenkins-slave   latest              f3ac335af281        3 months ago        438 MB
-
-
-Our dokku app is on the repository name “dokku/node-simple”
-//
 
 
 > sudo docker pull evarga/jenkins-slave
@@ -801,6 +762,9 @@ then
 > /etc/init.d/rsyslog restart
 > sudo service rsyslog status (to verify)
 
+————
 
+
+sudo usermod -a -G docker jenkins
 
 

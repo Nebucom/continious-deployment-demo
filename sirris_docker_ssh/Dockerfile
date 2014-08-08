@@ -27,11 +27,14 @@ RUN echo 'root:1111' | chpasswd
 RUN echo 'jenkins:1111' | chpasswd
 RUN su - jenkins -c "mkdir -p /var/lib/jenkins/.ssh"
 ADD id_rsa /var/lib/jenkins/.ssh/
+RUN echo "    IdentityFile /var/lib/jenkins" >> /etc/ssh/ssh_config
 ADD id_rsa.pub /var/lib/jenkins/.ssh/
 ADD known_hosts /var/lib/jenkins/.ssh/
 ADD authorized_keys /var/lib/jenkins/.ssh/
+RUN echo 'AuthorizedKeysFile /var/lib/jenkins' >> /etc/ssh/sshd_config
 RUN chown jenkins:jenkins -R /var/lib/jenkins/.ssh
-RUN chmod 0755 /var/lib/jenkins/.ssh && chmod 0644 /var/lib/jenkins/.ssh/*
+#RUN chmod 0755 /var/lib/jenkins/.ssh && chmod 0644 /var/lib/jenkins/.ssh/*
+RUN chmod 755 /var/lib/jenkins/.ssh && chmod 700 /var/lib/jenkins/.ssh/*
 
 
 RUN sed 's/Defaults *requiretty/#Defaults    requiretty/' -i /etc/sudoers
