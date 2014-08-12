@@ -616,7 +616,23 @@ https://blog.codecentric.de/en/2014/02/docker-registry-run-private-docker-image-
 
 
 
-1. Install docker on jenkins VM (normally provided by puppet), then in shell :
+1. Install docker on jenkins VM :
+
+by adding :
+
+    config.vm.provision "docker" do |d|
+    	#d.build_image "/vagrant/app"
+    end
+
+to Vagrantfile.
+
+then :
+
+> vagrant reload —-provision 
+
+
+
+then in shell :
 
 > sudo usermod -a -G docker vagrant
 > sudo usermod -a -G docker jenkins
