@@ -12,17 +12,37 @@ https://github.com/alexanderbeletsky/node-simple
 
 ———
 
+
+DOKKU VM :
+
+
+based mainly on :
+
+
+https://github.com/progrium/dokku
+
+http://beletsky.net/2013/09/playing-with-dokku-on-vagrant.html
+
+https://help.github.com/articles/generating-ssh-keys
+
+http://progrium.com/blog/2013/06/19/dokku-the-smallest-paas-implementation-youve-ever-seen/
+
+http://nerderati.com/2011/03/17/simplify-your-life-with-an-ssh-config-file/
+
+
+
 In the main directory you have:
 
 The vagrant files
 Dokku’s files
 puppet’s files
 
-Vagrantfile inits the whole installation (virtual machine with ubuntu, git, docker, dokku, and software add with puppet)
+Vagrantfile inits the whole installation (ubuntu VM with git, docker, dokku and puppet)
 
-// I have to change variable “raring” to “trusty”
-BOX_NAME = ENV["BOX_NAME"] || "raring"
-BOX_URI = ENV["BOX_URI"] || "https://cloud-images.ubuntu.com/vagrant/trusty/current/trusty-server-cloudimg-amd64-vagrant-disk1.box"
+// Todo : change variable "raring" to "trusty”, with dependencies.
+//BOX_NAME = ENV["BOX_NAME"] || "raring"
+//BOX_URI = ENV["BOX_URI"] || "https://cloud-images.ubuntu.com/vagrant/trusty/current/trusty-server-cloudimg-amd64-vagrant-disk1.box"
+
 
 
 0. Cloning the dokku repo
@@ -123,7 +143,6 @@ and here :
 
 https://github.com/example42/puppet-modules
 
-///////////
 
 
 ———————————
@@ -238,13 +257,14 @@ https://forge.puppetlabs.com/rtyler/jenkins
 http://csfreebird.blogspot.be/2012/08/installing-jenkins-plugin-manually.html
 
 
-/!\ Attention ASCII /!\
+/!\ ASCII /!\
 " is not the same then “
 
 
 
 
 6. Launch a new job in jenkins
+
 
 go to “new job”, set a name, select git
 Provide the path of GitHub repository under “GitHub Project” : http://…., sans .git
@@ -289,16 +309,13 @@ Just take the same key pair then before ! So just add existing host private key 
 
 13
 
-Jenkins is for the moment run locally, so github can’t trigger jenkins
-
-Instead we’ll ask jenkins to pull frequently github —> Cron like
+Github can’t trigger Jenkins if this one is run locally
 
 
-So, choose “build periodically option”
+Instead we’ll ask jenkins to pull frequently github —> Cron like : “build periodically” option with by example as planning “*/2 * * * *”
 
-Planning :
 
-*/2 * * * *
+or just manual launch
 
 
 
@@ -329,11 +346,11 @@ dokku@dokku.me:node-simple
 
 with the same credentials then the first repo
 
-Then, set a name, by example : remoterepo
- and under “Branches to build”, puts “origin/master”
+Then, set a name, by example : remoterepo.
 
-set a name too for the first repo, “origin”
+Also, set a name for the first repo : origin.
 
+Under “Branches to build”, puts “origin/master”
 
 Then, choose post build option “git publisher”
 
@@ -389,30 +406,18 @@ http://www.carbonsilk.com/node/deploying-nodejs-apps/
 ———
 
 
-Docker commands:
-
-Commands List
 
 
-sudo docker [option] [command] [arguments]
+Jenkins “Docker plug in” : DOESN’T WORK!
 
-—
-
-
-A dedicated Jenkins job builds an image from this Dockerfile. We keep the image building as a separate task because it's time consuming… once an image is built, containers can be run from it over and over and the start up time is practically nil!
-
-
-——
-
-Jenkins+Docker COnfiguration
 
 
 Goto Jenkins Configuration page by clicking on Manage menu or browsing to the URL http://localhost:8080/configure
+
 Scroll down to Cloud Section
+
 Click on the `Add a new cloud` pop-up menu button which should have an option - docker
 
-
-—
 
 
 Docker image:
@@ -430,18 +435,11 @@ https://github.com/docker/docker/wiki/Public-docker-images
 
 
 
-
 > sudo docker pull evarga/jenkins-slave
-
 > sudo docker images
-
 > sudo docker ps -a
 
-
-Ensuite, pour lancer une commande avec, il faut faire docker run id_image commande. Ceci va lancer l’image, lancer la commande, et dès que la commande se termine, arrêter l’image :
-
-
-sudo docker run -P -d evarga/jenkins-slave
+> sudo docker run -P -d evarga/jenkins-slave
 
 
 Thanks to the -P option used in the run command, all the exposed ports are mapped automatically. So if you go to yourDockerHost:49154 with a web browser, you’ll have the running Nuxeo instance.
@@ -457,20 +455,20 @@ or
 > ssh jenkins@localhost -p 2222
 
 
-Works.
+
 
 If your host needs to allow connections from a jenkins instance hosted on a different machine, you will need to open up the TCP port. This can be achieved by editing /etc/init/docker.conf, and setting (for example) 
 
 
 
 > vagrant ssh
-
 > sudo nano /etc/default/docker
-ajouter :
+
+then add :
 
 DOCKER_OPTS="-H 127.0.0.1:4243 -H unix:///var/run/docker.sock"
 
-ou plutôt
+or if remote :
 
 DOCKER_OPTS="-H 0.0.0.0:4243 -H unix:///var/run/docker.sock"
 
@@ -484,47 +482,15 @@ sudo service docker restart
 Then go to jenkins, and make a test connection to http://localhost:4243
 
 
-—
-
-> sudo docker inspect 013d47357d20 | grep IP
-
-> sudo ssh jenkins@172.17.0.42
-
-Works
-
---
-
-> sudo docker rm -f $(sudo docker ps -a | grep evarga)
-
-
-—
-
-Show only image ID's
-
-> sudo docker images -q
 
 —————
 
+If we want to connect to a container (with sshd installed) :
 
-Credentials for slave server:
+> sudo docker inspect 013d47357d20 | grep IP
+> sudo ssh jenkins@172.17.0.42
 
-
-> ssh-keygen -t rsa
-
-
-> chmod 755 ~/.ssh
-
-
-> echo 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCr5lzMXzgxtWqYVWYzaxwoCzO9DPNqkPgJN/1Zire/FcisSIJkGU8E7E8Cpl5U3Fj+2whD9LkEhHOc6nwuRC8C4uDUxE9b54fwL0BqhEy6ADv3vOVPOu1SUg0g10A/+bmcJ+l5ER1LcOMzUP88chXZVRoFV9VjAbHlI8fxWaw34J66oJd7xRpYGlnuyfyCrrl5Wb+tssycZEAezs7r3NRuEvjcoGEgLiKBHqxWCekyq4VQw9pX0303eBKCMsy56z6OegtEtpF4LEubUBGSVPfzN6aVLhxP6z+P3NbYonxBRGiDxnI86jiViii/dljCp0sWE8yQtHUNu/D2zsOCD88L label' > /home/jenkins/.ssh/authorized_keys
-
-
->  chmod 644 ~/.ssh/authorized_keys
-
-
-> exit
-
-
-> sudo docker commit f098b5830556 jenkins-test-cred
+—————
 
 
 
@@ -534,47 +500,14 @@ http://varmenise.tumblr.com/post/87976165063/docker-on-centos-jenkins
 
 
 
-——
-
-
-You can see that it creates a user jenkins:jenkins.
-
-So you would naturally use these credentials to access it by jenkins: this is wrong—> you need ssh authentication to make it work with the docker-plugin.
-
-pull the container: 
-
-> docker pull evarga/jenkins-slave
-
-Once you have done this you will see it appearing in the list of images (sudo docker images)
-
-
-run the container: 
-
-> docker run -i -t evarga/jenkins-slave /bin/bash
-
-create the ssh key pair
-
-> ssh-keygen -t rsa
-
-
-> echo 'AuthorizedKeysFile /etc/ssh/authorized_keys' >> /etc/ssh/sshd_config
-
-
-> echo 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCr5lzMXzgxtWqYVWYzaxwoCzO9DPNqkPgJN/1Zire/FcisSIJkGU8E7E8Cpl5U3Fj+2whD9LkEhHOc6nwuRC8C4uDUxE9b54fwL0BqhEy6ADv3vOVPOu1SUg0g10A/+bmcJ+l5ER1LcOMzUP88chXZVRoFV9VjAbHlI8fxWaw34J66oJd7xRpYGlnuyfyCrrl5Wb+tssycZEAezs7r3NRuEvjcoGEgLiKBHqxWCekyq4VQw9pX0303eBKCMsy56z6OegtEtpF4LEubUBGSVPfzN6aVLhxP6z+P3NbYonxBRGiDxnI86jiViii/dljCp0sWE8yQtHUNu/D2zsOCD88L label' > /etc/ssh/authorized_keys
-
-
-
-> echo "    IdentityFile /root/.ssh/id_rsa" >> /etc/ssh/ssh_config
-
-
 
 ————
 
 
-For the test, to disable the fingerprint authentification :
+For testing, disable the fingerprint authentification :
 
 
-Add the following lines to the beginning of /etc/ssh/ssh_config
+Add the following lines to the beginning of /etc/ssh/ssh_config, server side :
 
 
 Host *
@@ -588,55 +521,12 @@ The Host subnet can be * to allow unrestricted access to all IPs.
 Edit /etc/ssh/ssh_config for global configuration or ~/.ssh/config for user-specific configuration.
 
 
-————
 
-man hier
+—————
 
-——-
+Instead of all these manual commands, I’ve a Dockerfile that automatically configure ubuntu for the ssh key config. 
 
-# We're being careful here in that we're only cleaning up containers which are no longer running
-
-sudo docker ps -a | grep "Exit" | awk '{print $1}' | while read -r id ; do
-  sudo docker rm $id
-done
-
-
-
-
-
-——————
-
-add_pub_etc_et_jenkins :
-
-Je n’ai pas realise les commandes :
-
-> ssh-keygen -t rsa
-
-> echo "    IdentityFile /root/.ssh/id_rsa" >> /etc/ssh/ssh_config
-
-
-De plus, j’ai ajoute au server (docker) la cld publique du root et de l’user jenkins
-
-
-
-Add the following lines to the beginning of /etc/ssh/ssh_config, server side (docker)
-
-
-echo "    StrictHostKeyChecking no
-    UserKnownHostsFile=/dev/null" >> /etc/ssh/ssh_config
-
-
-———-
-
-
-pub_jenkins_all_com :
-
-
-toutes les commandes et cle publique jenkins et cld prive de la cle publique jenkins.
-
-Ensuite test avec autre cld privée
-
-
+see sirris_docker_ssh folder in continious-deployment-demo
 
 
 —————
@@ -644,64 +534,16 @@ Ensuite test avec autre cld privée
 
 
 
-sudo -u jenkins ssh-keygen
 
-That will generate the key for you here:
-/var/lib/jenkins/.ssh/id_rsa.pub
+Docker command to delete matching containers :
 
+// To not use sudo be sure to add jenkins user to docker group :
+// > sudo gpasswd -a ${USER} docker // with user = vagrant or jenkins
+// > sudo service docker restart
 
-ok, then
-
-
-
-echo 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCr5lzMXzgxtWqYVWYzaxwoCzO9DPNqkPgJN/1Zire/FcisSIJkGU8E7E8Cpl5U3Fj+2whD9LkEhHOc6nwuRC8C4uDUxE9b54fwL0BqhEy6ADv3vOVPOu1SUg0g10A/+bmcJ+l5ER1LcOMzUP88chXZVRoFV9VjAbHlI8fxWaw34J66oJd7xRpYGlnuyfyCrrl5Wb+tssycZEAezs7r3NRuEvjcoGEgLiKBHqxWCekyq4VQw9pX0303eBKCMsy56z6OegtEtpF4LEubUBGSVPfzN6aVLhxP6z+P3NbYonxBRGiDxnI86jiViii/dljCp0sWE8yQtHUNu/D2zsOCD88L label' > /etc/ssh/authorized_keys
-
-test_var_lib_key
+> docker ps -a | grep 'weeks ago' | awk '{print $1}' | xargs docker rm -f
 
 
-
-
-
-
-docker ps -a | grep 'weeks ago' | awk '{print $1}' | xargs docker rm
-
-
-
-sudo groupadd docker
-sudo gpasswd -a ${USER} docker
-sudo service docker.io restart
-+ exit & log in
-
-
-———
-
-> vagrant up
-
-> vagrant ssh
-> mkdir dev
-> cd dev
-> cp /vagrant/test_slave/* .
-> sudo docker build -t bill .
-
-
-> sudo nano /etc/default/docker
-
-DOCKER_OPTS="-H 127.0.0.1:4243 -H unix:///var/run/docker.sock"
-
-> sudo gpasswd -a vagrant docker
-> sudo service docker restart
-
-
-
-> sudo -u jenkins ssh-keygen
-> sudo chmod 755 .ssh
-> cd .ssh
-> sudo chmod 644 *
-
-> docker run -i -t bill  /bin/bash
-> cd /var/lib/jenkins
-> echo …. >> authorized_keys
-> docker commit 973685f7e17d kill
 
 
 ———
@@ -768,6 +610,9 @@ http://www.centurylinklabs.com/15-quick-docker-tips/
 
 https://blog.codecentric.de/en/2014/02/docker-registry-run-private-docker-image-repository/
 
+http://sametmax.com/le-deploiement-par-conteneurs-avec-docker/
+
+https://blog.codecentric.de/en/2014/02/docker-registry-run-private-docker-image-repository/
 
 
 
@@ -845,23 +690,24 @@ docker rm ${JOB_NAME}
 ####################################
 
 
+Issues :
 
 
+Failed to fork error :
+
+vagrant ssh and then in sudo :
+
+> dd if=/dev/zero of=/swapfile bs=1024 count=1024000
+> mkswap /swapfile
+> swapon /swapfile
+
+or
+
+add memory to jenkins by changing Vagrantfile
 
 
+Jenkins docker file build : Normally port 5000 is not in use but /!\
 
-http://nerderati.com/2011/03/17/simplify-your-life-with-an-ssh-config-file/
-
-
-
-
-——
-
-
-Agrandir la mémoire vive pour jenkins VM (sinon swap problème)
-
-
-faire attention que le port 5000 ne soit pas utilise pendant la tache de build jenkins
 
 
 
