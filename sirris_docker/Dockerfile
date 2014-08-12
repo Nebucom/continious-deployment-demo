@@ -1,12 +1,14 @@
 # This Dockerfile is used to build an image containing basic stuff to be used as a Jenkins slave build node.
 
+
+# docker OS
 FROM ubuntu:trusty
-
-
 
 
 RUN apt-get update
 RUN apt-get -y install git
+RUN apt-get -y install wget
+
 
 #RUN apt-get -y install build-essential
 RUN apt-get install -y --no-install-recommends openjdk-7-jdk
@@ -39,6 +41,6 @@ EXPOSE 22
 
 RUN git clone -b master git@github.com:Nebucom/node-simple.git node-simple
 
-
+# Command to run at "docker run ..."
 
 CMD cd /node-simple && git checkout master && git pull && javac Hello.java && java Hello

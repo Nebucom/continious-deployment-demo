@@ -1,8 +1,4 @@
 
-ssh root@dokku.me "echo export NODE_ENV="development" > /home/git/node-simple/ENV
-
-ssh dokku@dokku.me "echo export NODE_ENV="development" > /home/dokku/node-js-simple/ENV
-
 
 dokku config node-js-simple
 
@@ -719,7 +715,8 @@ DOCKER_OPTS="-H 127.0.0.1:4243 -H unix:///var/run/docker.sock"
 ———
 
 
-Graylog : Vagrant Box
+GRAYLOG CONFIG : New VM
+
 
 https://github.com/hggh/graylog2-vagrant
 
@@ -755,7 +752,7 @@ Then, in the source machine
  
 Add this line :
 
-*.* @<ip-server-graylog2>:514
+*.* @<ip-server-graylog2>:1514
 
 then 
 
@@ -765,15 +762,81 @@ then
 ————
 
 
-sudo usermod -a -G docker jenkins
 
-———
 
+JENKINS CONFIG :
+
+based on
+
+http://www.activestate.com/blog/2014/01/using-docker-run-ruby-rspec-ci-jenkins
+
+https://zapier.com/engineering/continuous-integration-jenkins-docker-github/
+
+http://www.centurylinklabs.com/15-quick-docker-tips/
+
+
+1. Install docker on jenkins VM (normally provided by puppet), then in shell :
+
+> sudo usermod -a -G docker vagrant
+> sudo usermod -a -G docker jenkins
+> sudo service docker restart
+
+(Todo : Add these commands to puppet)
+
+
+Now in jenkins interface :
+
+
+- Create a new job, named by example “docker_build”.
+- At “build periodically” you can add : “H 3 * * *”.
+- Add a shell script step.
+- Copy the followings :
+
+####################################
+
+docker run --name ${JOB_NAME} -d -p 5000:5000 samalba/docker-registry
+
+DOCKERFILE_DIRECTORY=docker
+
+# Fetch Dockerfile
+mkdir -p $DOCKERFILE_DIRECTORY
+wget https://raw.githubusercontent.com/Nebucom/dockerfile_config/master/Dockerfile --directory-prefix=$DOCKERFILE_DIRECTORY
+
+# Fetch private key
+wget https://raw.githubusercontent.com/Nebucom/dockerfile_config/master/id_rsa --directory-prefix=$DOCKERFILE_DIRECTORY
+
+# Fetch public key
+wget https://raw.githubusercontent.com/Nebucom/dockerfile_config/master/id_rsa.pub --directory-prefix=$DOCKERFILE_DIRECTORY
+
+# Fetch build_and_push script
+wget https://gist.githubusercontent.com/Guessing/526d20ca94ca18370d9a/raw/19d880cd8cce43b0efa7789019020cf05219f0f4/build_and_push.sh
+chmod +x build_and_push.sh
+
+# Build the Docker image
+DOCKER_REPO_SERVER=localhost:5000 ./build_and_push.sh $DOCKERFILE_DIRECTORY docker_image_name
+
+
+docker rm -f ${JOB_NAME}
+
+####################################
+
+- Apply and save.
+
+
+2. Add your slave job :
+
+
+- Create a new job, named by example “jenkins_docker_slave”.
+- At “build periodically” you can add something.
+- Add a shell script step.
+- Copy the followings :
+
+####################################
 
 
 #!/bin/bash
  
-docker run --name ${JOB_NAME} boule
+docker run --name ${JOB_NAME} localhost:5000/docker_image_name 
  
 # copy build artifacts out of the container
 docker cp ${JOB_NAME}:/node-simple/Hello.java .
@@ -783,25 +846,26 @@ docker cp ${JOB_NAME}:/node-simple/Hello.class .
 docker rm ${JOB_NAME}
 
 
-https://zapier.com/engineering/continuous-integration-jenkins-docker-github/
-
-
-http://www.activestate.com/blog/2014/01/using-docker-run-ruby-rspec-ci-jenkins
-
-
-http://www.centurylinklabs.com/15-quick-docker-tips/
+####################################
 
 
 
 
-
-Fix “Permissions are too open … private key will be ignored”
 
 
 
 http://nerderati.com/2011/03/17/simplify-your-life-with-an-ssh-config-file/
 
 
+
+
+——
+
+
+Agrandir la mémoire vive pour jenkins VM (sinon swap problème)
+
+
+faire attention que le port 5000 ne soit pas utilise pendant la tache de build jenkins
 
 
 

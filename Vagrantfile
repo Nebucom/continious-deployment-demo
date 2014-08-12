@@ -19,9 +19,9 @@ Vagrant::configure("2") do |config|
   config.vm.synced_folder File.dirname(__FILE__), "/root/dokku"
   config.vm.network :forwarded_port, guest: 80, host: 8080
   # and then two forwarded_port for jenkins
-  config.vm.network :forwarded_port, guest: 8080, host: 2000
-  config.vm.network :forwarded_port, guest: 50000, host: 50000
-  config.vm.network :forwarded_port, guest: 49153, host: 49153
+  #config.vm.network :forwarded_port, guest: 8080, host: 2000
+  #config.vm.network :forwarded_port, guest: 50000, host: 50000
+  #config.vm.network :forwarded_port, guest: 49153, host: 49153
   config.vm.hostname = "#{DOKKU_DOMAIN}"
   config.vm.network :private_network, ip: DOKKU_IP
 
