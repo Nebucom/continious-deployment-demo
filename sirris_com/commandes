@@ -51,13 +51,11 @@ and add :
 
 > cat ~/.ssh/id_rsa.pub | vagrant ssh -- sudo sshcommand acl-add dokku computer1
 
-> alias dokku="ssh -t dokku@<ip-of-your-instance>" // more convenient
 
+//> alias dokku="ssh -t dokku@<ip-of-your-instance>" // more convenient
 // cat ~/.ssh/id_rsa.pub | ssh root@{{server ip address}} "sudo sshcommand acl-add dokku {{key name/descriptor}}"
 // User is “dokku”, description is “computer1”
 //sshcommand acl-add <user> <ssh-key-name>
-
-
 // to get public key hash and compare to github by example, enter : > ssh-keygen -l -f id_rsa.pub
 
 
@@ -83,7 +81,6 @@ and add :
 
 > cd node-simple
 > git remote add local-deploy dokku@dokku.me:node-simple
-
 > git push local-deploy master
 
 
@@ -129,7 +126,18 @@ https://github.com/example42/puppet-modules
 ///////////
 
 
-7. Add Jenkins to puppet
+———————————
+
+
+JENKINS VM
+
+
+Set up a new VM with a base vagrant ubuntu trusty file.
+
+Clone puppet directory
+
+
+1. Add Jenkins to puppet
 
 
 Download tar file here : https://forge.puppetlabs.com/rtyler/jenkins
@@ -142,7 +150,19 @@ https://forge.puppetlabs.com/darin/zypprepo  module.
 Java module is already installed.
 
 
-8. Start jenkins  (Normally automatically done)
+2. Vagrant networking :
+
+  config.vm.network :forwarded_port, guest: 8080, host: 2000
+  config.vm.network :"private_network", ip: "10.0.0.3”,
+
+
+Guest Machine : the virtual one
+Host : the real
+So we add “config.vm.network :forwarded_port, guest: 8080, host: 2000” in the Vagrantfile to access jenkins (port 8080 on the guest) via port 2000 on the host machine.
+
+
+3. Start jenkins  (Normally automatically done) :
+
 
 sudo /etc/init.d/jenkins start
 
@@ -151,41 +171,9 @@ and
 sudo /etc/init.d/jenkins stop to stop it
 
 
-$$$$$$$$$$$$$$ If we want to use jenkins in another VM :
 
 
-In another directory :
-
-
-vagrant up a new ubuntu box with puppet for jenkins,and by example:
-
-  config.vm.network :forwarded_port, guest: 8080, host: 2000
-  config.vm.network :"private_network", ip: "10.0.0.3”,
-
-then add dokku.me to etc/hosts (not mandatory)
-
-$$$$$$$$$$$$$$
-
-
-9. Configure vagrant port for jenkins
-
-
-Guest Machine : the virtual one
-Host : the real
-
-
-config.vm.network "forwarded_port", guest: 80, host: 8080
-
-The forwarded port configuration expects two parameters, the port on the guest and the port on the host
-
-
-This will allow accessing port 80 on the guest via port 8080 on the host.
-
-
-So we add “config.vm.network :forwarded_port, guest: 8080, host: 3000” in the Vagrantfile to access jenkins via port 3000 on the host machine.
-
-
-10. Random error when vagrant provision :
+4. Random error when vagrant provision :
 
 
 If error message with provisioning :
@@ -213,7 +201,9 @@ set vagrant virtual box memory to 1024
 like explained at : http://blog.42quirks.com/install-dokku-on-amazon-ec2-ubuntu-12-04/
 
 
-11. Change dokku/puppet/modules/jenkins/manifests/plugins.pp file to automatically install git jenkins plug in
+
+
+5. Change dokku/puppet/modules/jenkins/manifests/plugins.pp file to automatically install git jenkins plug in
 
 List of plug in :
 
@@ -222,7 +212,7 @@ http://updates.jenkins-ci.org/download/plugins/
 
 Example, add that to install git plug in:
 
- jenkins::plugin { "promoted-builds" : }
+  jenkins::plugin { "promoted-builds" : }
   jenkins::plugin { "ssh-credentials" : }
   jenkins::plugin { "credentials" : }
   jenkins::plugin { "git-client" : }
@@ -252,7 +242,9 @@ http://csfreebird.blogspot.be/2012/08/installing-jenkins-plugin-manually.html
 " is not the same then “
 
 
-12. Launch a new job in jenkins
+
+
+6. Launch a new job in jenkins
 
 go to “new job”, set a name, select git
 Provide the path of GitHub repository under “GitHub Project” : http://…., sans .git
@@ -773,6 +765,10 @@ http://www.activestate.com/blog/2014/01/using-docker-run-ruby-rspec-ci-jenkins
 https://zapier.com/engineering/continuous-integration-jenkins-docker-github/
 
 http://www.centurylinklabs.com/15-quick-docker-tips/
+
+https://blog.codecentric.de/en/2014/02/docker-registry-run-private-docker-image-repository/
+
+
 
 
 1. Install docker on jenkins VM (normally provided by puppet), then in shell :
