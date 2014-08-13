@@ -638,6 +638,10 @@ then in shell :
 > sudo usermod -a -G docker jenkins
 > sudo service docker restart
 
+or
+
+> sudo service docker.io restart
+
 (Todo : Add these commands to puppet)
 
 
@@ -674,6 +678,13 @@ DOCKER_REPO_SERVER=localhost:5000 ./build_and_push.sh $DOCKERFILE_DIRECTORY dock
 
 
 docker rm -f ${JOB_NAME}
+
+
+
+or if io :
+
+
+https://gist.githubusercontent.com/Guessing/0b1bcef7f100061d914f/raw/360e830411c87feaa94995685a7ffed79509cfb2/build_and_push_io.sh
 
 ####################################
 
